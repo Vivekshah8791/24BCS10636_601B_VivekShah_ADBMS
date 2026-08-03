@@ -14,7 +14,7 @@ ON
    and s1.St_id != s2.St_id;
   
   
-SELECT DISTINCT
+SELECT
     s1.St_id,
     s1.St_Name,
     s1.Course_id
