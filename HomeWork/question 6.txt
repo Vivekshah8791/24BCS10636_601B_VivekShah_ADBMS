@@ -1,0 +1,13 @@
+WITH call_intervals AS (
+  SELECT 
+    policy_holder_id,
+    call_date - LAG(call_date) OVER (
+      PARTITION BY policy_holder_id 
+      ORDER BY call_date
+    ) AS time_diff
+  FROM callers
+)
+SELECT 
+  COUNT(DISTINCT policy_holder_id) AS policy_holder_count
+FROM call_intervals
+WHERE time_diff <= INTERVAL '7 days';

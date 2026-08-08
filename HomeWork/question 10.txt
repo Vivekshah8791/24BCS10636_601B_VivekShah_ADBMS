@@ -1,0 +1,28 @@
+WITH weekly_touches AS (
+  SELECT DISTINCT
+    contact_id,
+    DATE_TRUNC('week', event_date) AS week_start
+  FROM marketing_touches
+),
+streaks AS (
+  SELECT 
+    contact_id,
+    week_start,
+    LAG(week_start, 1) OVER (PARTITION BY contact_id ORDER BY week_start) AS prev_week_1,
+    LAG(week_start, 2) OVER (PARTITION BY contact_id ORDER BY week_start) AS prev_week_2
+  FROM weekly_touches
+),
+trial_contacts AS (
+  SELECT DISTINCT contact_id
+  FROM marketing_touches
+  WHERE event_type = 'trial_request'
+)
+SELECT DISTINCT 
+  c.email
+FROM streaks s
+JOIN trial_contacts t
+  ON s.contact_id = t.contact_id
+JOIN crm_contacts c
+  ON s.contact_id = c.contact_id
+WHERE s.week_start = s.prev_week_1 + INTERVAL '1 week'
+  AND s.prev_week_1 = s.prev_week_2 + INTERVAL '1 week';

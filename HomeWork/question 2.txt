@@ -1,0 +1,11 @@
+WITH repeated_payments AS (
+  SELECT 
+    transaction_timestamp - LAG(transaction_timestamp) OVER (
+      PARTITION BY merchant_id, credit_card_id, amount 
+      ORDER BY transaction_timestamp
+    ) AS time_diff
+  FROM transactions
+)
+SELECT COUNT(*) AS payment_count
+FROM repeated_payments
+WHERE time_diff <= INTERVAL '10 minutes';
